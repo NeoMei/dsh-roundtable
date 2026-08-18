@@ -1,0 +1,13 @@
+{
+  "name": "dsh-roundtable",
+  "version": "0.1.0-rc.6",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "description": "Roundtable (圆桌讨论) multi-agent discussion plugin for DeepSeek Harness — host engine, model-facing tool, and web sidebar entry.",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^6.0.3"
+  }
+}
