@@ -258,23 +258,31 @@ interface Config {
 
 ### 0. 一键安装脚本（推荐）
 
-构建出三个 tarball 后，用仓库自带的 [`install.sh`](install.sh) 一步完成安装：
+**无需本地构建** —— 脚本从 GitHub Release 自动下载预构建的 tarball 与 skill 并安装：
 
 ```sh
-./install.sh --tgz-dir /path/to/tgz          # 三个 tarball 所在目录
-# 或直接给三个 tarball（任意顺序）
-./install.sh /path/a.tgz /path/b.tgz /path/c.tgz
+curl -fsSL https://raw.githubusercontent.com/NeoMei/dsh-roundtable/main/install.sh | bash
 ```
 
-脚本会自动：把 tarball 复制进 profile 的 `roundtable-tgzs/`（`file:` 依赖指向稳定路径）→ `pnpm add` 三个包 → 幂等写入 `cordis.patch.yml` 的 insert 条目（已存在则跳过）→ 复制 skill 到 `~/.agents/skills/roundtable/SKILL.md` → 提示重启。
+或 clone 后运行：
 
 ```sh
-./install.sh --help          # 全部选项
-./install.sh --dry-run --tgz-dir /path/to/tgz   # 只预演，不执行
-./install.sh --profile ~/.dsh/profiles/other --tgz-dir /path/to/tgz   # 指定 profile
+git clone https://github.com/NeoMei/dsh-roundtable.git
+cd dsh-roundtable
+./install.sh
 ```
 
-下面第 1–4 步是脚本所做之事的逐步手动版，供排查/自定义用。
+脚本会自动：从 Release 下载三个 tarball + `SKILL.md` → 复制进 profile 的 `roundtable-tgzs/`（`file:` 依赖指向稳定路径）→ `pnpm add` 三个包 → 幂等写入 `cordis.patch.yml` 的 insert 条目（已存在则跳过）→ 复制 skill → 提示重启。
+
+```sh
+./install.sh --version 0.1.0-rc.6    # 指定版本（默认 0.1.0-rc.6）
+./install.sh --profile DIR           # 指定 profile（默认 ~/.dsh/profiles/desktop）
+./install.sh --dry-run               # 只预演，不执行
+./install.sh --tgz-dir DIR           # 离线：用本地 tarball，不下载
+./install.sh --help                  # 全部选项
+```
+
+下面第 1–4 步是「自己构建 + 手动安装」的逐步版，供开发者/自定义用（脚本覆盖其中第 2–4 步）。
 
 ### 1. 构建（在 deepseek-harness checkout 里）
 
