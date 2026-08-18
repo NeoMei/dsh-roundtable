@@ -6,7 +6,7 @@
  * and `roundtable/end` closes it. Whatever is still open after the log ends is
  * a discussion that can be resumed ("继续"/"停止") in a later process.
  *
- * @module @deepseek-ai/dsh-roundtable/recovery
+ * @module @neomei/dsh-roundtable/recovery
  */
 import type { SessionEvent } from '@deepseek-ai/dsh-session'
 import type { RoundMinutes, RoundtableInfo, RoundtableId } from './types.ts'

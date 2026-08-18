@@ -1,5 +1,5 @@
 {
-  "name": "@deepseek-ai/dsh-roundtable",
+  "name": "@neomei/dsh-roundtable",
   "description": "Roundtable capability seam: discussion state, round executor, markdown serializer, and roundtable/* event vocabulary",
   "version": "0.1.0-rc.6",
   "publishConfig": {
@@ -30,11 +30,17 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "cordis.patch.yml",
     "lib/index.js",
     "lib/types/**/*.js",
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.1"
   },

@@ -1,0 +1,3 @@
+- insert:
+    - id: ui-roundtable
+      name: '@neomei/dsh-client-ui-roundtable'

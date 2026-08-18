@@ -3,7 +3,7 @@
  * type, and the `roundtable/*` event vocabulary. Kept separate from the barrel
  * so the concrete provider (`engine.ts`) and the drivers can import the seam
  * without a module cycle through `index.ts`.
- * @module @deepseek-ai/dsh-roundtable/service
+ * @module @neomei/dsh-roundtable/service
  */
 
 import { Context, Service } from '@deepseek-ai/cordis'

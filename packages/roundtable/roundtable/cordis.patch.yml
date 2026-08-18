@@ -1,0 +1,5 @@
+- insert:
+    - id: roundtable
+      name: '@neomei/dsh-roundtable'
+      config:
+        provider: spawn

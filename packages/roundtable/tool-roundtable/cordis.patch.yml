@@ -1,0 +1,3 @@
+- insert:
+    - id: tool-roundtable
+      name: '@neomei/dsh-tool-roundtable'

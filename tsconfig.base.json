@@ -1,15 +1,15 @@
 {
   // Standalone typecheck base: resolves core @deepseek-ai/dsh-* from the
   // published npm packages (their `exports` point at shipped .d.ts), and maps
-  // the ONE in-repo package (@deepseek-ai/dsh-roundtable) to its source so
+  // the ONE in-repo package (@neomei/dsh-roundtable) to its source so
   // tool-roundtable / client-ui-roundtable typecheck without a prior build.
   "compilerOptions": {
     "target": "es2024",
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-      "@deepseek-ai/dsh-roundtable": ["./packages/roundtable/roundtable/src/index.ts"],
-      "@deepseek-ai/dsh-roundtable/*": ["./packages/roundtable/roundtable/src/*"]
+      "@neomei/dsh-roundtable": ["./packages/roundtable/roundtable/src/index.ts"],
+      "@neomei/dsh-roundtable/*": ["./packages/roundtable/roundtable/src/*"]
     },
     "strict": true,
     "skipLibCheck": true,

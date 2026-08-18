@@ -19,7 +19,7 @@
  *   `stopDiscussion` / `cancelDiscussion`.
  *
  * The live-loop seam is shipped by the `roundtable-host` plugin (`host.ts`,
- * module `@deepseek-ai/dsh-roundtable/host`): an `agent/pre-step` interception
+ * module `@neomei/dsh-roundtable/host`): an `agent/pre-step` interception
  * routes a human message into the steer queue while a round runs, versus the
  * gate reply while the host is awaiting it, and the host presents
  * "是否进入下一轮？" as its own follow-up turn. The gate classification,
@@ -27,7 +27,7 @@
  * core; `host.ts` only adds the
  * {@link @deepseek-ai/dsh-agent#Agent} loop wiring on top.
  *
- * @module @deepseek-ai/dsh-roundtable/driver
+ * @module @neomei/dsh-roundtable/driver
  */
 import type { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'

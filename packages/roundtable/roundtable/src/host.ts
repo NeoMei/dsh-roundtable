@@ -17,7 +17,7 @@
  * serializes every round to markdown via `ctx.fs`, and any other human input
  * while a round is running is a mid-round steer claimed by the running round.
  *
- * @module @deepseek-ai/dsh-roundtable/host
+ * @module @neomei/dsh-roundtable/host
  */
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'

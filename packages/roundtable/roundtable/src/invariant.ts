@@ -3,14 +3,14 @@
  * projects into a parent Session must replay with a stable shape, so shape
  * checks here guard the cross-process recovery fold (`recovery.ts`) and the
  * client's structural casts.
- * @module @deepseek-ai/dsh-roundtable/invariant
+ * @module @neomei/dsh-roundtable/invariant
  */
 
 import type { Context } from '@deepseek-ai/cordis'
 import type { Session, SessionEvent } from '@deepseek-ai/dsh-session'
 import type { InvariantFailure, InvariantInstaller } from '@deepseek-ai/dsh-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-roundtable'
+const PACKAGE_NAME = '@neomei/dsh-roundtable'
 const STOP_REASONS = new Set(['completed', 'cancelled', 'error'])
 
 /** Cordis companion plugin name. */

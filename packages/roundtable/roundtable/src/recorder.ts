@@ -2,7 +2,7 @@
  * Minutes store: project each settled round's minutes and the terminal
  * settlement into the calling parent Session as durable `roundtable/*` events.
  * Mirrors `createWorkflowRecorder` in packages/workflow/tool-workflow.
- * @module @deepseek-ai/dsh-roundtable/recorder
+ * @module @neomei/dsh-roundtable/recorder
  */
 
 import type { Context } from '@deepseek-ai/cordis'

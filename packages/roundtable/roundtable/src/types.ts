@@ -1,7 +1,7 @@
 /**
  * Roundtable seam vocabulary: discussion state, round minutes, member roster,
  * and the `roundtable/*` event payloads. Types only, per the package convention.
- * @module @deepseek-ai/dsh-roundtable/types
+ * @module @neomei/dsh-roundtable/types
  */
 import type { Branded } from '@deepseek-ai/dsh-brand'
 import type { AgentOptions } from '@deepseek-ai/dsh-agent'

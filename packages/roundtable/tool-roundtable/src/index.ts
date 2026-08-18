@@ -1,25 +1,25 @@
 /**
  * The model-facing `roundtable` tool: run a single-round multi-agent discussion and return the
  * minutes. It owns the model-facing schema and run lifecycle; roster validation, member execution,
- * and cancellation live behind `ctx.roundtable` (`@deepseek-ai/dsh-roundtable`). Execution awaits
+ * and cancellation live behind `ctx.roundtable` (`@neomei/dsh-roundtable`). Execution awaits
  * `run.result` and always disposes the run in a `finally`. Explicit-ask usage guidance is
  * registered as the tool's own prompt section.
  *
  * The companion `roundtable_models` tool lists the providers and models the DSH runtime has
  * registered (`ctx.llm.listProviders()` / `ctx.llm.listModels()`), so member model cards are built
  * from the live runtime instead of the incomplete `settings.yaml`.
- * @module @deepseek-ai/dsh-tool-roundtable
+ * @module @neomei/dsh-tool-roundtable
  */
 
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { defineTool } from '@deepseek-ai/dsh-tools'
-import { serializeRoundtableMarkdown } from '@deepseek-ai/dsh-roundtable'
-import type { RoundtableMember } from '@deepseek-ai/dsh-roundtable'
+import { serializeRoundtableMarkdown } from '@neomei/dsh-roundtable'
+import type { RoundtableMember } from '@neomei/dsh-roundtable'
 // Declaration merge only: makes ctx.systemPrompt visible for the section registration.
 import type {} from '@deepseek-ai/dsh-system-prompt'
 // Declaration merge only: makes ctx.roundtable visible for `ctx.roundtable.start`.
-import type {} from '@deepseek-ai/dsh-roundtable'
+import type {} from '@neomei/dsh-roundtable'
 // Declaration merge only: makes ctx.llm visible for `ctx.llm.listProviders()` / `listModels()`.
 import type {} from '@deepseek-ai/dsh-llm'
 // Declaration merge only: makes ctx.sessionTitle visible for session rename.
