@@ -96,7 +96,7 @@ elif [[ -n "$TGZ_DIR" ]]; then
   }
   (
     cd "$PROFILE"
-    pnpm add "$(pick deepseek-ai-dsh-roundtable)" "$(pick deepseek-ai-dsh-tool-roundtable)" "$(pick deepseek-ai-dsh-client-ui-roundtable)"
+    pnpm add "$(pick neomei-dsh-roundtable)" "$(pick neomei-dsh-tool-roundtable)" "$(pick neomei-dsh-client-ui-roundtable)"
   )
 else
   (
