@@ -54,12 +54,12 @@ importers:
       '@deepseek-ai/dsh-invariants':
         specifier: 0.1.0-rc.6
         version: 0.1.0-rc.6(@deepseek-ai/cordis@4.0.1)
-      '@deepseek-ai/dsh-roundtable':
-        specifier: workspace:^
-        version: link:../../roundtable/roundtable
       '@deepseek-ai/dsh-session':
         specifier: 0.1.0-rc.6
         version: 0.1.0-rc.6(dac9b2c35a9ecb9e9d8b32c63c85ea57)
+      '@neomei/dsh-roundtable':
+        specifier: workspace:^
+        version: link:../../roundtable/roundtable
       '@types/react':
         specifier: ~18.3.1
         version: 18.3.31
@@ -125,9 +125,6 @@ importers:
       '@deepseek-ai/dsh-llm':
         specifier: 0.1.0-rc.6
         version: 0.1.0-rc.6(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-attachment@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-brand@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)))(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)))(@deepseek-ai/dsh-brand@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)))(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1))(@deepseek-ai/dsh-timeout@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)(@deepseek-ai/dsh-invariants@0.1.0-rc.7(@deepseek-ai/cordis@4.0.1)))
-      '@deepseek-ai/dsh-roundtable':
-        specifier: workspace:^
-        version: link:../roundtable
       '@deepseek-ai/dsh-session':
         specifier: 0.1.0-rc.6
         version: 0.1.0-rc.6(6b7e1aa2b890a6a6301df408503d83e4)
@@ -140,6 +137,9 @@ importers:
       '@deepseek-ai/dsh-tools':
         specifier: 0.1.0-rc.6
         version: 0.1.0-rc.6(a28cf79e501056be5a0f0e79ba899584)
+      '@neomei/dsh-roundtable':
+        specifier: workspace:^
+        version: link:../roundtable
 
 packages:
 
