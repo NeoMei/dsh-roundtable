@@ -33,10 +33,10 @@
 dsh-roundtable/
 ├── packages/
 │   ├── roundtable/
-│   │   ├── roundtable/        @deepseek-ai/dsh-roundtable     宿主引擎
-│   │   └── tool-roundtable/   @deepseek-ai/dsh-tool-roundtable 模型侧工具
+│   │   ├── roundtable/        @neomei/dsh-roundtable     宿主引擎
+│   │   └── tool-roundtable/   @neomei/dsh-tool-roundtable 模型侧工具
 │   └── client/
-│       └── ui-roundtable/     @deepseek-ai/dsh-client-ui-roundtable 侧边栏入口
+│       └── ui-roundtable/     @neomei/dsh-client-ui-roundtable 侧边栏入口
 ├── skill/
 │   └── SKILL.md               圆桌讨论 skill（对话式引导）
 ├── install.sh                 一键安装脚本
@@ -46,9 +46,9 @@ dsh-roundtable/
 
 | 包 | 作用 |
 | --- | --- |
-| `@deepseek-ai/dsh-roundtable` | 宿主引擎：单轮执行器、成员运行器、主持人汇总、纪要序列化、`roundtable/*` 事件与落盘/跨进程恢复 |
-| `@deepseek-ai/dsh-tool-roundtable` | 模型侧工具：`roundtable` / `roundtable_models` / `roundtable_title` |
-| `@deepseek-ai/dsh-client-ui-roundtable` | 侧边栏「新讨论组」入口：新建会话并发起圆桌讨论 |
+| `@neomei/dsh-roundtable` | 宿主引擎：单轮执行器、成员运行器、主持人汇总、纪要序列化、`roundtable/*` 事件与落盘/跨进程恢复 |
+| `@neomei/dsh-tool-roundtable` | 模型侧工具：`roundtable` / `roundtable_models` / `roundtable_title` |
+| `@neomei/dsh-client-ui-roundtable` | 侧边栏「新讨论组」入口：新建会话并发起圆桌讨论 |
 | `skill/SKILL.md` | 圆桌讨论 skill：卡片式引导 + 逐成员发言 + 汇总 + 写纪要 |
 
 ---
@@ -78,7 +78,7 @@ dsh-roundtable/
 
 ## 三个插件包
 
-### `@deepseek-ai/dsh-roundtable`（宿主引擎）
+### `@neomei/dsh-roundtable`（宿主引擎）
 
 提供 `ctx.roundtable` 服务，核心是单轮讨论：
 
@@ -125,11 +125,11 @@ interface Config {
 }
 ```
 
-### `@deepseek-ai/dsh-tool-roundtable`（模型侧工具）
+### `@neomei/dsh-tool-roundtable`（模型侧工具）
 
 注册三个工具（见[模型侧工具](#模型侧工具)），并把 `roundtable` 工具的使用引导注入 system prompt。
 
-### `@deepseek-ai/dsh-client-ui-roundtable`（侧边栏入口）
+### `@neomei/dsh-client-ui-roundtable`（侧边栏入口）
 
 在侧边栏底部注册「新讨论组」按钮：解析当前/最近 Workspace → 新建会话 → 发送「圆桌讨论」→ 交给 skill。按钮在无法解析目标 Workspace 时禁用。
 
@@ -258,7 +258,7 @@ interface Config {
 
 ### 0. 一键安装脚本（推荐）
 
-**无需本地构建** —— 脚本从 GitHub Release 自动下载预构建的 tarball 与 skill 并安装：
+**无需本地构建** —— 脚本从 npm 安装三个 `@neomei/dsh-*` 包、从 GitHub Release 下载 skill 并安装：
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/NeoMei/dsh-roundtable/main/install.sh | bash
@@ -272,21 +272,32 @@ cd dsh-roundtable
 ./install.sh
 ```
 
-脚本会自动：从 Release 下载三个 tarball + `SKILL.md` → 复制进 profile 的 `roundtable-tgzs/`（`file:` 依赖指向稳定路径）→ `pnpm add` 三个包 → 幂等写入 `cordis.patch.yml` 的 insert 条目（已存在则跳过）→ 复制 skill → 提示重启。
+脚本会自动：`pnpm add` 三个 `@neomei/dsh-*` 包 → 幂等写入 `cordis.patch.yml` 的 insert 条目（已存在则跳过）→ 复制 skill → 提示重启。
 
 ```sh
 ./install.sh --version 0.1.0-rc.6    # 指定版本（默认 0.1.0-rc.6）
 ./install.sh --profile DIR           # 指定 profile（默认 ~/.dsh/profiles/desktop）
 ./install.sh --dry-run               # 只预演，不执行
-./install.sh --tgz-dir DIR           # 离线：用本地 tarball，不下载
+./install.sh --tgz-dir DIR           # 离线：用本地 tarball，不装 npm
 ./install.sh --help                  # 全部选项
 ```
 
-下面第 1–4 步是「自己构建 + 手动安装」的逐步版，供开发者/自定义用（脚本覆盖其中第 2–4 步）。
+也可以手动从 npm 安装：
 
-### 1. 构建（在 deepseek-harness checkout 里）
+```sh
+cd ~/.dsh/profiles/desktop
+pnpm add @neomei/dsh-roundtable@0.1.0-rc.6 \
+         @neomei/dsh-tool-roundtable@0.1.0-rc.6 \
+         @neomei/dsh-client-ui-roundtable@0.1.0-rc.6
+```
 
-本仓库是**源码分发**，规范构建路径是在与目标 DSH 同版本的 deepseek-harness checkout 里：
+下面第 1–4 步是「从源码构建 + 手动安装」的逐步版，供开发者/自定义用。
+
+### 1. 构建（贡献者用，从源码）
+
+> 普通用户跳过本步，直接用上面的 npm 安装。构建需在 deepseek-harness checkout 里进行，产出的是官方 `@deepseek-ai/*` 命名的包；要发成 `@neomei/*` 需在打包后把包名（及 `tool-roundtable` 对 `dsh-roundtable` 的交叉引用）改名为 `@neomei/*`。
+
+与目标 DSH 同版本的 deepseek-harness checkout 里：
 
 ```sh
 # 把三个包放进 checkout：
@@ -306,17 +317,17 @@ cd packages/client/ui-roundtable && pnpm pack
 ```
 
 得到三个 tarball：
-- `deepseek-ai-dsh-roundtable-0.1.0-rc.6.tgz`
-- `deepseek-ai-dsh-tool-roundtable-0.1.0-rc.6.tgz`
-- `deepseek-ai-dsh-client-ui-roundtable-0.1.0-rc.6.tgz`
+- `neomei-dsh-roundtable-0.1.0-rc.6.tgz`
+- `neomei-dsh-tool-roundtable-0.1.0-rc.6.tgz`
+- `neomei-dsh-client-ui-roundtable-0.1.0-rc.6.tgz`
 
 ### 2. 装进 profile
 
 ```sh
 cd ~/.dsh/profiles/desktop
-pnpm add /path/to/deepseek-ai-dsh-roundtable-0.1.0-rc.6.tgz \
-         /path/to/deepseek-ai-dsh-tool-roundtable-0.1.0-rc.6.tgz \
-         /path/to/deepseek-ai-dsh-client-ui-roundtable-0.1.0-rc.6.tgz
+pnpm add /path/to/neomei-dsh-roundtable-0.1.0-rc.6.tgz \
+         /path/to/neomei-dsh-tool-roundtable-0.1.0-rc.6.tgz \
+         /path/to/neomei-dsh-client-ui-roundtable-0.1.0-rc.6.tgz
 ```
 
 在 profile 的 `cordis.patch.yml` 里插入三个插件：
@@ -324,15 +335,15 @@ pnpm add /path/to/deepseek-ai-dsh-roundtable-0.1.0-rc.6.tgz \
 ```yaml
 - insert:
     - id: roundtable
-      name: '@deepseek-ai/dsh-roundtable'
+      name: '@neomei/dsh-roundtable'
       config:
         provider: spawn          # 可选，默认 spawn
 
     - id: tool-roundtable
-      name: '@deepseek-ai/dsh-tool-roundtable'
+      name: '@neomei/dsh-tool-roundtable'
 
     - id: ui-roundtable
-      name: '@deepseek-ai/dsh-client-ui-roundtable'
+      name: '@neomei/dsh-client-ui-roundtable'
 ```
 
 ### 3. 安装 skill
