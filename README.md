@@ -39,6 +39,7 @@ dsh-roundtable/
 │       └── ui-roundtable/     @deepseek-ai/dsh-client-ui-roundtable 侧边栏入口
 ├── skill/
 │   └── SKILL.md               圆桌讨论 skill（对话式引导）
+├── install.sh                 一键安装脚本
 ├── README.md
 └── LICENSE                     MIT
 ```
@@ -254,6 +255,26 @@ interface Config {
 ---
 
 ## 安装
+
+### 0. 一键安装脚本（推荐）
+
+构建出三个 tarball 后，用仓库自带的 [`install.sh`](install.sh) 一步完成安装：
+
+```sh
+./install.sh --tgz-dir /path/to/tgz          # 三个 tarball 所在目录
+# 或直接给三个 tarball（任意顺序）
+./install.sh /path/a.tgz /path/b.tgz /path/c.tgz
+```
+
+脚本会自动：把 tarball 复制进 profile 的 `roundtable-tgzs/`（`file:` 依赖指向稳定路径）→ `pnpm add` 三个包 → 幂等写入 `cordis.patch.yml` 的 insert 条目（已存在则跳过）→ 复制 skill 到 `~/.agents/skills/roundtable/SKILL.md` → 提示重启。
+
+```sh
+./install.sh --help          # 全部选项
+./install.sh --dry-run --tgz-dir /path/to/tgz   # 只预演，不执行
+./install.sh --profile ~/.dsh/profiles/other --tgz-dir /path/to/tgz   # 指定 profile
+```
+
+下面第 1–4 步是脚本所做之事的逐步手动版，供排查/自定义用。
 
 ### 1. 构建（在 deepseek-harness checkout 里）
 
