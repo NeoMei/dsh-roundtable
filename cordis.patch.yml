@@ -1,0 +1,19 @@
+# dsh-roundtable bundle patch: the three-plugin insert applied as ONE layer
+# over the profile root. This file is (a) the "cordis 标记" that community
+# marketplaces use to detect this repo as a DSH cordis plugin, and (b) the
+# `dsh.bundle.patch` target if the repo is later published as a single
+# installable bundle.
+#
+# Targets DSH 0.1.0-rc.6.
+
+- insert:
+    - id: roundtable
+      name: '@deepseek-ai/dsh-roundtable'
+      config:
+        provider: spawn
+
+    - id: tool-roundtable
+      name: '@deepseek-ai/dsh-tool-roundtable'
+
+    - id: ui-roundtable
+      name: '@deepseek-ai/dsh-client-ui-roundtable'
