@@ -290,6 +290,9 @@ dsh plugin --profile desktop add github:NeoMei/dsh-roundtable
 - URL 结尾**不要带 `/`**：`https://github.com/NeoMei/dsh-roundtable` 才会被识别为 git 仓库。
 - 固定版本：`github:NeoMei/dsh-roundtable#<ref>`（分支 / tag / commit）。
 
+> **报 `ERR_PNPM_NO_MATCHING_VERSION … @neomei/dsh-roundtable@0.1.0-rc.7`（`while installing the dependencies of dsh-roundtable@0.1.0-rc.7`）怎么办？**
+> 这不是仓库的问题：仓库根只是 bundle 的“接线图”，三个 `@neomei/*` 包本体走 npm。上面那个版本还没发上去时会报这个错 —— 先把三个包发到 npm（见文末[发布](#发布)），再装。`pnpm view @neomei/dsh-roundtable versions` 可以确认已发布的版本。
+
 ### 方式 B：一键安装脚本
 
 ```sh
@@ -424,6 +427,24 @@ pnpm tsc -b tsconfig.client.json                                   # 客户端�
 - 成员模型选择依赖宿主的 `ctx.llm` 注册表；`roundtable_models` 列不出的 provider 会被跳过。
 - 客户端「新讨论组」的目标 Workspace 现按 0.2 的投影自行推导（最近被更新的 Session 所在 Workspace，相同时按宿主顺序），与 shell 的 New Session 回退规则一致；0.2 的客户端不再暴露「当前 Session」选择，所以不再优先「当前会话所在的 Workspace」。
 - **`dsh.client.inject` 里失效的包名不会报错**：客户端模块系统对 `inject` 是软解析（`if (dependency !== undefined)`），缺包只是不预载，不会抛错 —— 所以升级 DSH 后要主动核对这张表（本次就是靠类型检查才发现 `dsh-client-runtime` 已经不存在）。
+
+---
+
+## 发布
+
+三个 `@neomei/*` 包要分别发布（npm 不允许重复发布同一版本，所以每次发布前先把三个 `package.json` 的 `version` 一起改掉，并同步根 `package.json` 的 `dependencies`）：
+
+```sh
+pnpm check:bundle                                   # 先过守卫
+for p in packages/roundtable/roundtable packages/roundtable/tool-roundtable packages/client/ui-roundtable; do
+  (cd "$p" && npm publish --access public --tag latest)   # 会要求浏览器 / OTP 授权
+done
+pnpm install                                        # 刷新 pnpm-lock.yaml，随发布一起提交
+```
+
+发完 `pnpm view @neomei/dsh-roundtable versions` 应能看到新版本；只发了一部分的话，GitHub URL 安装会在解析依赖时报 `ERR_PNPM_NO_MATCHING_VERSION`。
+
+`install.sh` 的 skill 下载会先取 `releases/download/v<版本>/SKILL.md`，取不到就回落 `main` 上的 `skill/SKILL.md`，所以**发布 npm 包不依赖 GitHub Release**；要固定版本安装时才需要打 tag（`git tag v<版本> && git push --tags`）。
 
 ---
 
