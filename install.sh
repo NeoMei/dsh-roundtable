@@ -62,7 +62,7 @@ done
 
 command -v pnpm >/dev/null 2>&1 || { echo "未找到 pnpm（DSH Desktop 的 PATH 自带；请确认已安装）" >&2; exit 1; }
 
-# ---- skill：优先用仓库内的，其次从 release 下载 ----
+# ---- skill：优先用仓库内的，其次 release 资源，最后回落到 main 上的副本 ----
 if [[ -z "$SKILL" && -f "./skill/SKILL.md" ]]; then
   SKILL="./skill/SKILL.md"
 fi
@@ -70,9 +70,17 @@ if [[ -z "$SKILL" ]]; then
   command -v curl >/dev/null 2>&1 || { echo "未找到 curl（下载 skill 需要）" >&2; exit 1; }
   DL_DIR="$(mktemp -d)"
   trap 'rm -rf "$DL_DIR"' EXIT
-  SKILL_URL="https://github.com/${RT_REPO}/releases/download/v${RT_VERSION}/SKILL.md"
-  echo "下载 $SKILL_URL"
-  curl -fL --retry 3 -o "$DL_DIR/SKILL.md" "$SKILL_URL" || { echo "下载失败: $SKILL_URL" >&2; exit 1; }
+  # 版本对应的 release 资源优先（可与插件版本对齐），没有就取 main 上的同一份 ——
+  # 仓库里 skill/SKILL.md 才是唯一真源，release 只是快照，缺资源不该让安装失败。
+  for SKILL_URL in \
+    "https://github.com/${RT_REPO}/releases/download/v${RT_VERSION}/SKILL.md" \
+    "https://raw.githubusercontent.com/${RT_REPO}/main/skill/SKILL.md"
+  do
+    echo "下载 $SKILL_URL"
+    if curl -fL --retry 3 -o "$DL_DIR/SKILL.md" "$SKILL_URL"; then break; fi
+    echo "  ↳ 取不到，换下一个来源" >&2
+  done
+  [[ -s "$DL_DIR/SKILL.md" ]] || { echo "skill 下载失败（release 与 main 都没取到）" >&2; exit 1; }
   SKILL="$DL_DIR/SKILL.md"
 fi
 [[ -f "$SKILL" ]] || { echo "skill 文件不存在: $SKILL" >&2; exit 1; }
