@@ -1,0 +1,50 @@
+/**
+ * Shared Workspace resolution for the roundtable sidebar entry.
+ *
+ * The DSH 0.2 client contract dropped both the Session list's `current`
+ * selection and the Workspace snapshot's `recentWorkspaceId`, so the target is
+ * derived from the two projections directly — the same rule the shell's own
+ * New Session action falls back to: the Workspace holding the most recently
+ * updated Session, with ties following Host Workspace order.
+ *
+ * @module @neomei/dsh-client-ui-roundtable/target-workspace
+ */
+/**
+ * The Workspace holding the most recently updated Session.
+ * @param workspaces - the Workspace projection's rows, in Host order.
+ * @param sessions - the Session projection, keyed by id.
+ * @returns the selected Workspace, or `undefined` when none holds a Session.
+ */
+export function recentWorkspace(workspaces, sessions) {
+    let selected;
+    let selectedTime = Number.NEGATIVE_INFINITY;
+    for (const workspace of workspaces) {
+        let latest = Number.NEGATIVE_INFINITY;
+        for (const sessionId of workspace.sessionIds) {
+            const session = sessions[sessionId];
+            if (session !== undefined)
+                latest = Math.max(latest, session.updatedAt);
+        }
+        if (latest === Number.NEGATIVE_INFINITY)
+            latest = Date.parse(workspace.createdAt);
+        if (selected === undefined || latest > selectedTime) {
+            selected = workspace.workspaceId;
+            selectedTime = latest;
+        }
+    }
+    return selected;
+}
+/**
+ * The Workspace a new roundtable session would land in, or `undefined` while
+ * either projection is still arriving (the entry stays disabled until then).
+ * Takes only the fields the resolution reads, so callers can pass either a
+ * full snapshot or the pieces a selector returned.
+ * @param workspaces - the Workspace projection's arrival phase and rows.
+ * @param sessions - the Session projection's arrival phase and rows.
+ * @returns the target Workspace, or `undefined` when no session can start.
+ */
+export function targetWorkspace(workspaces, sessions) {
+    if (workspaces.phase !== 'ready' || sessions.phase !== 'ready')
+        return undefined;
+    return recentWorkspace(workspaces.items, sessions.byId);
+}

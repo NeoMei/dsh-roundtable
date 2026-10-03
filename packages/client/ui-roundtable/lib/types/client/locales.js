@@ -39,4 +39,3 @@ export const en = {
     'status.cancelled': 'Cancelled',
     'status.error': 'Error',
 };
-//# sourceMappingURL=locales.js.map

@@ -7,7 +7,6 @@ export type RoundtableFooterActionProps = PropsRuntime<'sidebar.footer.action'> 
  * Render the roundtable entry beside Settings. The button starts a NEW
  * session (never reuses the current one), so it is disabled while no
  * Workspace can be resolved as the target — mirroring the shell's New Session
- * resolution: the current Session's Workspace, then the recent Workspace.
+ * resolution: the Workspace holding the most recently updated Session.
  */
 export declare function RoundtableFooterAction({ wide, useSessions, useWorkspaces, startRoundtableSession, t, }: RoundtableFooterActionProps): import("react").JSX.Element;
-//# sourceMappingURL=RoundtableFooterAction.d.ts.map

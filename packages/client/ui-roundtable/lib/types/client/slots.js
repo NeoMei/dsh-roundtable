@@ -3,4 +3,3 @@
  * the client plugin's `sidebar.footer.action` registration.
  */
 export {};
-//# sourceMappingURL=slots.js.map

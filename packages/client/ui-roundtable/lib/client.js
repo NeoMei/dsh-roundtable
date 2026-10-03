@@ -4,11 +4,49 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
-		//#region \0dsh-css:/Users/neomei/项目/deepseek/harness-src/packages/client/ui-roundtable/src/client/RoundtableFooterAction.module.css.mjs
-		const css = ".DeIc2G_layer{flex:none;align-items:center;width:100%;height:49px;margin:8px 0 0;display:flex;position:relative}.DeIc2G_button{width:100%;height:49px;color:var(--dsw-alias-label-primary);cursor:pointer;background:0 0;border:none;border-radius:12px;align-items:center;gap:8px;padding:0 8px 0 6px;font-family:inherit;font-size:14px;display:inline-flex;overflow:hidden}.DeIc2G_button:hover:not(:disabled){background:var(--dsw-alias-interactive-bg-hover-solid)}.DeIc2G_button:disabled{opacity:.4;cursor:default}.DeIc2G_label{text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}.DeIc2G_layer.DeIc2G_rail{width:36px;height:36px;margin:0}.DeIc2G_rail .DeIc2G_button{border-radius:50%;justify-content:center;gap:0;width:36px;height:36px;padding:0}.DeIc2G_failure{text-overflow:ellipsis;white-space:nowrap;max-width:100%;color:var(--dsw-alias-state-error-primary);font-size:11px;line-height:16px;position:absolute;bottom:-18px;left:0;overflow:hidden}";
+		let react_jsx_runtime = require("react/jsx-runtime");
+		//#region src/client/target-workspace.ts
+		/**
+		* The Workspace holding the most recently updated Session.
+		* @param workspaces - the Workspace projection's rows, in Host order.
+		* @param sessions - the Session projection, keyed by id.
+		* @returns the selected Workspace, or `undefined` when none holds a Session.
+		*/
+		function recentWorkspace(workspaces, sessions) {
+			let selected;
+			let selectedTime = Number.NEGATIVE_INFINITY;
+			for (const workspace of workspaces) {
+				let latest = Number.NEGATIVE_INFINITY;
+				for (const sessionId of workspace.sessionIds) {
+					const session = sessions[sessionId];
+					if (session !== void 0) latest = Math.max(latest, session.updatedAt);
+				}
+				if (latest === Number.NEGATIVE_INFINITY) latest = Date.parse(workspace.createdAt);
+				if (selected === void 0 || latest > selectedTime) {
+					selected = workspace.workspaceId;
+					selectedTime = latest;
+				}
+			}
+			return selected;
+		}
+		/**
+		* The Workspace a new roundtable session would land in, or `undefined` while
+		* either projection is still arriving (the entry stays disabled until then).
+		* Takes only the fields the resolution reads, so callers can pass either a
+		* full snapshot or the pieces a selector returned.
+		* @param workspaces - the Workspace projection's arrival phase and rows.
+		* @param sessions - the Session projection's arrival phase and rows.
+		* @returns the target Workspace, or `undefined` when no session can start.
+		*/
+		function targetWorkspace(workspaces, sessions) {
+			if (workspaces.phase !== "ready" || sessions.phase !== "ready") return void 0;
+			return recentWorkspace(workspaces.items, sessions.byId);
+		}
+		//#endregion
+		//#region \0rt-css:/private/tmp/harness-020/packages/client/ui-roundtable/src/client/RoundtableFooterAction.module.css.mjs
+		const css = "._9JCCWW_layer{flex:none;align-items:center;width:100%;height:49px;margin:8px 0 0;display:flex;position:relative}._9JCCWW_button{width:100%;height:49px;color:var(--dsw-alias-label-primary);cursor:pointer;background:0 0;border:none;border-radius:12px;align-items:center;gap:8px;padding:0 8px 0 6px;font-family:inherit;font-size:14px;display:inline-flex;overflow:hidden}._9JCCWW_button:hover:not(:disabled){background:var(--dsw-alias-interactive-bg-hover-solid)}._9JCCWW_button:disabled{opacity:.4;cursor:default}._9JCCWW_label{text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}._9JCCWW_layer._9JCCWW_rail{width:36px;height:36px;margin:0}._9JCCWW_rail ._9JCCWW_button{border-radius:50%;justify-content:center;gap:0;width:36px;height:36px;padding:0}._9JCCWW_failure{text-overflow:ellipsis;white-space:nowrap;max-width:100%;color:var(--dsw-alias-state-error-primary);font-size:11px;line-height:16px;position:absolute;bottom:-18px;left:0;overflow:hidden}";
 		const tagId = "@neomei/dsh-client-ui-roundtable/RoundtableFooterAction.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -18,26 +56,33 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var RoundtableFooterAction_module_css_default = {
-			"rail": "DeIc2G_rail",
-			"label": "DeIc2G_label",
-			"failure": "DeIc2G_failure",
-			"button": "DeIc2G_button",
-			"layer": "DeIc2G_layer"
+			"button": "_9JCCWW_button",
+			"failure": "_9JCCWW_failure",
+			"label": "_9JCCWW_label",
+			"layer": "_9JCCWW_layer",
+			"rail": "_9JCCWW_rail"
 		};
 		//#endregion
-		//#region lib/types/client/RoundtableFooterAction.js
+		//#region src/client/RoundtableFooterAction.tsx
 		/** Sidebar-foot "新讨论组" action: start a new session and hand off to the roundtable skill. */
 		/**
 		* Render the roundtable entry beside Settings. The button starts a NEW
 		* session (never reuses the current one), so it is disabled while no
 		* Workspace can be resolved as the target — mirroring the shell's New Session
-		* resolution: the current Session's Workspace, then the recent Workspace.
+		* resolution: the Workspace holding the most recently updated Session.
 		*/
 		function RoundtableFooterAction({ wide, useSessions, useWorkspaces, startRoundtableSession, t }) {
-			const current = useSessions((state) => state.current);
-			const items = useWorkspaces((state) => state.items);
-			const recentWorkspaceId = useWorkspaces((state) => state.recentWorkspaceId);
-			const target = (current === void 0 ? void 0 : items.find((item) => item.sessionIds.includes(current))?.workspaceId) ?? recentWorkspaceId;
+			const workspacePhase = useWorkspaces((state) => state.phase);
+			const workspaceItems = useWorkspaces((state) => state.items);
+			const sessionPhase = useSessions((state) => state.phase);
+			const sessionsById = useSessions((state) => state.byId);
+			const target = workspacePhase === "ready" && sessionPhase === "ready" ? targetWorkspace({
+				phase: workspacePhase,
+				items: workspaceItems
+			}, {
+				phase: sessionPhase,
+				byId: sessionsById
+			}) : void 0;
 			const [pending, setPending] = (0, react.useState)(false);
 			const [failure, setFailure] = (0, react.useState)(null);
 			const onClick = async () => {
@@ -48,14 +93,14 @@ window.__ModuleLoader__.load({
 				setPending(false);
 				if (error !== null) setFailure(error);
 			};
-			return (0, react_jsx_runtime.jsxs)("div", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: wide ? RoundtableFooterAction_module_css_default.layer : `${RoundtableFooterAction_module_css_default.layer} ${RoundtableFooterAction_module_css_default.rail}`,
-				children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Tooltip, {
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Tooltip, {
 					label: t("footer.action"),
 					side: "bottom",
 					delayMs: 500,
 					disabled: wide,
-					children: (0, react_jsx_runtime.jsxs)("button", {
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 						type: "button",
 						className: RoundtableFooterAction_module_css_default.button,
 						"data-roundtable-footer": true,
@@ -64,12 +109,12 @@ window.__ModuleLoader__.load({
 						onClick: () => {
 							onClick();
 						},
-						children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconUserOutline16, { size: wide ? 14 : 18 }), wide && (0, react_jsx_runtime.jsx)("span", {
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconUserOutlineMedium, { size: wide ? 14 : 18 }), wide && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 							className: RoundtableFooterAction_module_css_default.label,
 							children: t("footer.action")
 						})]
 					})
-				}), failure !== null && (0, react_jsx_runtime.jsx)("span", {
+				}), failure !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 					className: RoundtableFooterAction_module_css_default.failure,
 					"data-roundtable-footer-error": true,
 					role: "alert",
@@ -78,7 +123,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region lib/types/client/locales.js
+		//#region src/client/locales.ts
 		/** `roundtable` namespace dictionaries. */
 		/** Dictionary namespace owned by this plugin. */
 		const NS = "roundtable";
@@ -121,25 +166,15 @@ window.__ModuleLoader__.load({
 			"status.error": "Error"
 		};
 		//#endregion
-		//#region lib/types/client/index.js
-		/** Browser plugin for the roundtable sidebar entry ("新讨论组"). */
+		//#region src/client/index.ts
 		/** Required services for the dictionary registration and the sidebar entry. */
 		const inject = [
 			"slots",
 			"locale",
 			"sessions",
-			"workspaces"
+			"workspaces",
+			"uiWorkspace"
 		];
-		/**
-		* The Workspace a new roundtable session would land in — the same resolution
-		* the shell's New Session action uses: the current Session's Workspace, then
-		* the recent-Workspace projection. `undefined` means no session can start.
-		*/
-		function targetWorkspace(ctx) {
-			const workspace = ctx.workspaces.list.getSnapshot();
-			const current = ctx.sessions.list.getSnapshot().current;
-			return (current === void 0 ? void 0 : workspace.items.find((item) => item.sessionIds.includes(current))?.workspaceId) ?? workspace.recentWorkspaceId;
-		}
 		/**
 		* Start a NEW roundtable session: connect the resolved Workspace's
 		* reuse-or-created blank session (`connectWorkspace` returns the id), open it,
@@ -148,12 +183,12 @@ window.__ModuleLoader__.load({
 		* short failure message (shown by the footer action).
 		*/
 		async function startRoundtableSession(ctx) {
-			const target = targetWorkspace(ctx);
+			const target = targetWorkspace(ctx.workspaces.list.getSnapshot(), ctx.sessions.list.getSnapshot());
 			if (target === void 0) return "no workspace to start a roundtable session in";
 			let sessionId;
 			try {
-				sessionId = await ctx.workspaces.connectWorkspace(target);
-				ctx.sessions.open(sessionId);
+				sessionId = await ctx.uiWorkspace.connectWorkspace(target);
+				ctx.uiWorkspace.openSession(sessionId);
 			} catch (reason) {
 				return reason instanceof Error ? reason.message : String(reason);
 			}

@@ -12,4 +12,3 @@ export interface RoundtableFooterActionInjected {
      */
     startRoundtableSession: () => Promise<string | null>;
 }
-//# sourceMappingURL=slots.d.ts.map

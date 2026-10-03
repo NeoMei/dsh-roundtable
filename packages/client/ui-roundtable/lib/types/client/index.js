@@ -1,21 +1,9 @@
 /** Browser plugin for the roundtable sidebar entry ("新讨论组"). */
 import { RoundtableFooterAction } from "./RoundtableFooterAction.js";
+import { targetWorkspace } from "./target-workspace.js";
 import { en, NS, zh } from "./locales.js";
 /** Required services for the dictionary registration and the sidebar entry. */
-export const inject = ['slots', 'locale', 'sessions', 'workspaces'];
-/**
- * The Workspace a new roundtable session would land in — the same resolution
- * the shell's New Session action uses: the current Session's Workspace, then
- * the recent-Workspace projection. `undefined` means no session can start.
- */
-function targetWorkspace(ctx) {
-    const workspace = ctx.workspaces.list.getSnapshot();
-    const current = ctx.sessions.list.getSnapshot().current;
-    const currentWorkspaceId = current === undefined
-        ? undefined
-        : workspace.items.find(item => item.sessionIds.includes(current))?.workspaceId;
-    return currentWorkspaceId ?? workspace.recentWorkspaceId;
-}
+export const inject = ['slots', 'locale', 'sessions', 'workspaces', 'uiWorkspace'];
 /**
  * Start a NEW roundtable session: connect the resolved Workspace's
  * reuse-or-created blank session (`connectWorkspace` returns the id), open it,
@@ -24,13 +12,13 @@ function targetWorkspace(ctx) {
  * short failure message (shown by the footer action).
  */
 async function startRoundtableSession(ctx) {
-    const target = targetWorkspace(ctx);
+    const target = targetWorkspace(ctx.workspaces.list.getSnapshot(), ctx.sessions.list.getSnapshot());
     if (target === undefined)
         return 'no workspace to start a roundtable session in';
     let sessionId;
     try {
-        sessionId = await ctx.workspaces.connectWorkspace(target);
-        ctx.sessions.open(sessionId);
+        sessionId = await ctx.uiWorkspace.connectWorkspace(target);
+        ctx.uiWorkspace.openSession(sessionId);
     }
     catch (reason) {
         return reason instanceof Error ? reason.message : String(reason);
@@ -60,4 +48,3 @@ export function apply(ctx) {
         }),
     }, RoundtableFooterAction));
 }
-//# sourceMappingURL=index.js.map

@@ -24,4 +24,3 @@ export declare const zh: {
 export declare const en: Record<RoundtableKey, string>;
 /** Union of this namespace's dictionary keys. */
 export type RoundtableKey = keyof typeof zh;
-//# sourceMappingURL=locales.d.ts.map

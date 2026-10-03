@@ -252,8 +252,9 @@ interface Config {
 
 ## 要求
 
-- **DSH（DeepSeek Harness）**：宿主需支持 `dsh.bundle` / `dsh.profile.bundles`。三个插件行已在 **`0.2.0-rc.2`** 上实测（导入 + 启动 + 真实圆桌跑通），也在 `0.1.5-rc.2` / `0.1.0-rc.6` 上可加载。
-- 插件包的 `@deepseek-ai/dsh-*` **peer** 依赖写成范围 `>=0.1.0-rc.6`，**不要 pin 精确版本**。DSH 会逐条核对：
+- **DSH（DeepSeek Harness）**：宿主需支持 `dsh.bundle` / `dsh.profile.bundles`。三个插件行已在 **`0.2.0-rc.2`** 上实测（导入 + 启动 + 真实圆桌跑通 + 客户端 bundle 下发），宿主两行也在 `0.1.5-rc.2` / `0.1.0-rc.6` 上可加载。
+- **客户端包（`@neomei/dsh-client-ui-roundtable`）只面向 0.2 的客户端契约**，peer 写成 `>=0.2.0-rc.2`：DSH 0.2 删掉了 `@deepseek-ai/dsh-client-runtime`，会话/工作区服务迁到 `dsh-api-session-controller` + `dsh-api-workspace-controller` + `uiWorkspace`，图标名也从 `IconUserOutline16` 变成 `IconUserOutlineMedium`，Workspace 快照不再有 `recentWorkspaceId`。宿主两个包（引擎 / 工具）不依赖这些，仍是 `>=0.1.0-rc.6`。
+- 插件包的 `@deepseek-ai/dsh-*` **peer** 依赖写成范围（`>=…`），**不要 pin 精确版本**。DSH 会逐条核对：
 
   ```js
   semver.satisfies(runtimeVersion, peerRange, { includePrerelease: true })
@@ -339,6 +340,14 @@ pnpm build:lib:host      # 构建宿主（引擎 + 工具）
 pnpm build:lib:client    # 构建客户端 bundle
 ```
 
+只重建**客户端 bundle** 时不必跑整条流水线：`lib/types/**`（tsc 产物）已随仓库提交，`tsdown.config.ts` 用的是 harness 的 `clientBundle` 预设，所以
+
+```sh
+cd packages/client/ui-roundtable && npx tsdown     # 用已提交的 lib/types 重新产出 lib/client.js
+```
+
+即可。注意该预设需要一个完整 checkout（`packages/client/tsdown.client.ts`、平台模块表、以及仓库生成的 `/remote` 契约）；干净 checkout 里 `tsc -b` 会因为那些生成文件缺失而报一堆 `Cannot find module '@deepseek-ai/dsh-*/remote'`，那是 harness 自身 codegen 未跑，不是本插件的问题。改客户端源码后请顺带对目标 DSH 跑一次类型检查（把 `@deepseek-ai/*` 指到目标版本已发布的包即可），因为 `dsh.client.inject` 的失效条目是**静默**的。
+
 然后每个包打包：
 
 ```sh
@@ -413,6 +422,8 @@ pnpm tsc -b tsconfig.client.json                                   # 客户端�
 - DSH 的兼容性校验只认 `@deepseek-ai/dsh` / `@deepseek-ai/dsh-*` 这两个前缀的 peer；其他 peer（如 `@deepseek-ai/cordis`、`@neomei/*`）不参与判定。
 - 安装必须让**仓库根**被识别成 bundle：`dsh.bundle.patch` 与 `cordis.patch.yml` 缺一不可，否则 DSH 视其为普通依赖 —— GUI 里表现为安装被回滚，CLI 里表现为 `declares no dsh.bundle — installed as a plain dependency`。
 - 成员模型选择依赖宿主的 `ctx.llm` 注册表；`roundtable_models` 列不出的 provider 会被跳过。
+- 客户端「新讨论组」的目标 Workspace 现按 0.2 的投影自行推导（最近被更新的 Session 所在 Workspace，相同时按宿主顺序），与 shell 的 New Session 回退规则一致；0.2 的客户端不再暴露「当前 Session」选择，所以不再优先「当前会话所在的 Workspace」。
+- **`dsh.client.inject` 里失效的包名不会报错**：客户端模块系统对 `inject` 是软解析（`if (dependency !== undefined)`），缺包只是不预载，不会抛错 —— 所以升级 DSH 后要主动核对这张表（本次就是靠类型检查才发现 `dsh-client-runtime` 已经不存在）。
 
 ---
 
