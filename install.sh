@@ -13,7 +13,7 @@
 set -euo pipefail
 
 RT_REPO="${RT_REPO:-NeoMei/dsh-roundtable}"
-RT_VERSION="${RT_VERSION:-0.1.0-rc.6}"
+RT_VERSION="${RT_VERSION:-0.1.0-rc.7}"
 RT_REF="${RT_REF:-}"
 PROFILE="${DSH_PROFILE:-$HOME/.dsh/profiles/desktop}"
 

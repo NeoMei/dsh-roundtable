@@ -252,8 +252,17 @@ interface Config {
 
 ## 要求
 
-- **DSH（DeepSeek Harness）**：宿主需支持 `dsh.bundle` / `dsh.profile.bundles`。三个插件行已在 **`0.1.5-rc.2`** 上实测导入并启动成功；包本身按 `0.1.0-rc.6` 构建。
-- 插件包的 `@deepseek-ai/dsh-*` **peer** 依赖 pin 到精确的 `0.1.0-rc.6`：这些包由宿主自己提供（profile 默认 `autoInstallPeers: false`，不会把它们装成第二份），pin 只影响 `pnpm peers check` 的告警，不阻塞安装。
+- **DSH（DeepSeek Harness）**：宿主需支持 `dsh.bundle` / `dsh.profile.bundles`。三个插件行已在 **`0.2.0-rc.2`** 上实测（导入 + 启动 + 真实圆桌跑通），也在 `0.1.5-rc.2` / `0.1.0-rc.6` 上可加载。
+- 插件包的 `@deepseek-ai/dsh-*` **peer** 依赖写成范围 `>=0.1.0-rc.6`，**不要 pin 精确版本**。DSH 会逐条核对：
+
+  ```js
+  semver.satisfies(runtimeVersion, peerRange, { includePrerelease: true })
+  ```
+
+  精确 pin（如 `0.1.0-rc.6`）只对那一个 runtime 成立 —— 换任何一个 DSH 版本，安装都会被判 `incompatible-version` 并**整体回滚**（CLI 与 GUI 都会），profile 里什么都没有。注意 `^0.1.0-rc.6` 同样不行：0.x 的 caret 上界是 `<0.2.0`，照样挡掉 `0.2.0-rc.2`。`>=` 才能在多个 runtime 上通用；要加上界就写成 `>=0.2.0-rc.2 <0.3.0` 这种范围。
+
+  `pnpm check:bundle` 会检查这条约定。
+- 这些 peer 包由宿主自己提供（profile 默认 `autoInstallPeers: false`，不会装成第二份），range 只用于兼容性核对与 `pnpm peers check` 提示。
 - pnpm（profile 侧安装用；DSH Desktop 自带）。
 
 ---
@@ -301,9 +310,9 @@ curl -fsSL https://raw.githubusercontent.com/NeoMei/dsh-roundtable/main/install.
 
 ```sh
 cd ~/.dsh/profiles/desktop
-pnpm add @neomei/dsh-roundtable@0.1.0-rc.6 \
-         @neomei/dsh-tool-roundtable@0.1.0-rc.6 \
-         @neomei/dsh-client-ui-roundtable@0.1.0-rc.6
+pnpm add @neomei/dsh-roundtable@0.1.0-rc.7 \
+         @neomei/dsh-tool-roundtable@0.1.0-rc.7 \
+         @neomei/dsh-client-ui-roundtable@0.1.0-rc.7
 ```
 
 三个包各自也声明了 `dsh.bundle.patch`，所以**不用**手写 patch：重启后 DSH 会把它们选入 `dsh.profile.bundles`，各带一行。
@@ -339,17 +348,17 @@ cd packages/client/ui-roundtable && pnpm pack
 ```
 
 得到三个 tarball：
-- `neomei-dsh-roundtable-0.1.0-rc.6.tgz`
-- `neomei-dsh-tool-roundtable-0.1.0-rc.6.tgz`
-- `neomei-dsh-client-ui-roundtable-0.1.0-rc.6.tgz`
+- `neomei-dsh-roundtable-0.1.0-rc.7.tgz`
+- `neomei-dsh-tool-roundtable-0.1.0-rc.7.tgz`
+- `neomei-dsh-client-ui-roundtable-0.1.0-rc.7.tgz`
 
 装进 profile：
 
 ```sh
 cd ~/.dsh/profiles/desktop
-pnpm add /path/to/neomei-dsh-roundtable-0.1.0-rc.6.tgz \
-         /path/to/neomei-dsh-tool-roundtable-0.1.0-rc.6.tgz \
-         /path/to/neomei-dsh-client-ui-roundtable-0.1.0-rc.6.tgz
+pnpm add /path/to/neomei-dsh-roundtable-0.1.0-rc.7.tgz \
+         /path/to/neomei-dsh-tool-roundtable-0.1.0-rc.7.tgz \
+         /path/to/neomei-dsh-client-ui-roundtable-0.1.0-rc.7.tgz
 ```
 
 ### 重启
@@ -384,7 +393,7 @@ pnpm add /path/to/neomei-dsh-roundtable-0.1.0-rc.6.tgz \
 
 ## 开发
 
-源码依赖 `@deepseek-ai/dsh-*@0.1.0-rc.6`（发布在 npm）。在 checkout 内：
+源码的 `peerDependencies` 写 `@deepseek-ai/dsh-*: >=0.1.0-rc.6`（peer，由宿主提供，不随插件安装）。在 checkout 内：
 
 ```sh
 pnpm vitest run packages/roundtable packages/client/ui-roundtable   # 单元测试（host 125+ / client）
@@ -400,7 +409,8 @@ pnpm tsc -b tsconfig.client.json                                   # 客户端�
 
 - **成员发言非流式**：成员是各自子会话里的真实 subagent，发言要等该成员跑完才作为一条消息出现（这是 DSH subagent 的固有约束）。
 - 多轮宿主循环（`host.ts`）是代码库里保留的另一种驱动方式，**未接线**到当前 skill 流程；当前由 skill 驱动多轮。
-- 依赖 pin 到 `0.1.0-rc.6`；核心包（`@deepseek-ai/dsh-*`）由宿主提供，升级 DSH 后需重新核对 API（已在 `0.1.5-rc.2` 上验证可加载）。
+- `@deepseek-ai/dsh-*` 用范围 `>=0.1.0-rc.6`（不是 pin）：精确 pin 会让校验直接拒绝安装并回滚；核心包由宿主提供，升级 DSH 后仍建议重跑 `pnpm check:bundle` 与一次真实圆桌。
+- DSH 的兼容性校验只认 `@deepseek-ai/dsh` / `@deepseek-ai/dsh-*` 这两个前缀的 peer；其他 peer（如 `@deepseek-ai/cordis`、`@neomei/*`）不参与判定。
 - 安装必须让**仓库根**被识别成 bundle：`dsh.bundle.patch` 与 `cordis.patch.yml` 缺一不可，否则 DSH 视其为普通依赖 —— GUI 里表现为安装被回滚，CLI 里表现为 `declares no dsh.bundle — installed as a plain dependency`。
 - 成员模型选择依赖宿主的 `ctx.llm` 注册表；`roundtable_models` 列不出的 provider 会被跳过。
 
