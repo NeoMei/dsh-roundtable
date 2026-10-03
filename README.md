@@ -30,7 +30,8 @@
 ## 仓库结构
 
 ```
-dsh-roundtable/
+dsh-roundtable/                 ← 仓库根 = 可安装的 bundle（package.json 声明 dsh.bundle.patch）
+├── cordis.patch.yml            bundle 的 patch 层：插入下面三行
 ├── packages/
 │   ├── roundtable/
 │   │   ├── roundtable/        @neomei/dsh-roundtable     宿主引擎
@@ -44,8 +45,11 @@ dsh-roundtable/
 └── LICENSE                     MIT
 ```
 
+仓库根同时是 **DSH bundle**：`package.json` 里 `dsh.bundle.patch` 指向 `cordis.patch.yml`，该 patch 一次插入全部三行；根的 `dependencies` 把三个 `@neomei/*` 包装进 profile。所以按 GitHub URL 安装一次即可（见[安装](#安装)）。
+
 | 包 | 作用 |
 | --- | --- |
+| 仓库根（`dsh-roundtable`） | **bundle**：一次安装引入全部三行；它自己不注册任何插件 |
 | `@neomei/dsh-roundtable` | 宿主引擎：单轮执行器、成员运行器、主持人汇总、纪要序列化、`roundtable/*` 事件与落盘/跨进程恢复 |
 | `@neomei/dsh-tool-roundtable` | 模型侧工具：`roundtable` / `roundtable_models` / `roundtable_title` |
 | `@neomei/dsh-client-ui-roundtable` | 侧边栏「新讨论组」入口：新建会话并发起圆桌讨论 |
@@ -248,41 +252,52 @@ interface Config {
 
 ## 要求
 
-- **DSH（DeepSeek Harness）`0.1.0-rc.6`**。
-- 三个插件包的**直接** `@deepseek-ai/dsh-*` 依赖 pin 到精确的 `0.1.0-rc.6`，因为 `^0.1.0-rc.6` 会解析到 API 不兼容的 `0.1.0-rc.7+`。
-- pnpm（profile 侧安装用）。
+- **DSH（DeepSeek Harness）**：宿主需支持 `dsh.bundle` / `dsh.profile.bundles`。三个插件行已在 **`0.1.5-rc.2`** 上实测导入并启动成功；包本身按 `0.1.0-rc.6` 构建。
+- 插件包的 `@deepseek-ai/dsh-*` **peer** 依赖 pin 到精确的 `0.1.0-rc.6`：这些包由宿主自己提供（profile 默认 `autoInstallPeers: false`，不会把它们装成第二份），pin 只影响 `pnpm peers check` 的告警，不阻塞安装。
+- pnpm（profile 侧安装用；DSH Desktop 自带）。
 
 ---
 
 ## 安装
 
-### 0. 一键安装脚本（推荐）
+### 方式 A：GitHub URL 一键安装（推荐）
 
-**无需本地构建** —— 脚本从 npm 安装三个 `@neomei/dsh-*` 包、从 GitHub Release 下载 skill 并安装：
+在 DSH 侧边栏的 **Plugins** 页面填仓库地址，或直接用命令行：
+
+```sh
+dsh plugin --profile desktop add github:NeoMei/dsh-roundtable
+```
+
+装完**完全重启 DSH Desktop**：启动时 DSH 会把该依赖选入 `dsh.profile.bundles`，应用它 `cordis.patch.yml` 里的三行 insert，并从 npm 装齐三个 `@neomei/*` 包。
+
+仓库根就是 bundle，靠这两个字段成立：
+
+| 字段 | 值 | 作用 |
+| --- | --- | --- |
+| `dsh.bundle.patch` | `./cordis.patch.yml` | 让 DSH 把它当插件层而不是普通依赖（**缺了它安装会被回滚**） |
+| `dependencies` | 三个 `@neomei/*` | patch 里三行 `name` 能被解析到 |
+
+- URL 结尾**不要带 `/`**：`https://github.com/NeoMei/dsh-roundtable` 才会被识别为 git 仓库。
+- 固定版本：`github:NeoMei/dsh-roundtable#<ref>`（分支 / tag / commit）。
+
+### 方式 B：一键安装脚本
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/NeoMei/dsh-roundtable/main/install.sh | bash
 ```
 
-或 clone 后运行：
+或 clone 后 `./install.sh`。脚本只做两件事：把 bundle 装进 profile、复制 skill。它**不再改写** profile 的 `cordis.patch.yml` —— 手写 insert 会和 bundle 自带的 patch 撞 entry id，而且往模板里的 `[]` 后面追加文档会直接把 patch 文件写成非法 YAML。
 
 ```sh
-git clone https://github.com/NeoMei/dsh-roundtable.git
-cd dsh-roundtable
-./install.sh
+./install.sh --ref v0.1.0-rc.7     # 固定 git ref（分支 / tag / commit）
+./install.sh --packages            # 备选：从 npm 装三个 @neomei/* 包
+./install.sh --profile DIR         # 指定 profile（默认 ~/.dsh/profiles/desktop）
+./install.sh --tgz-dir DIR         # 离线：三个本地 tarball
+./install.sh --dry-run             # 只预演，不执行
+./install.sh --help                # 全部选项
 ```
 
-脚本会自动：`pnpm add` 三个 `@neomei/dsh-*` 包 → 幂等写入 `cordis.patch.yml` 的 insert 条目（已存在则跳过）→ 复制 skill → 提示重启。
-
-```sh
-./install.sh --version 0.1.0-rc.6    # 指定版本（默认 0.1.0-rc.6）
-./install.sh --profile DIR           # 指定 profile（默认 ~/.dsh/profiles/desktop）
-./install.sh --dry-run               # 只预演，不执行
-./install.sh --tgz-dir DIR           # 离线：用本地 tarball，不装 npm
-./install.sh --help                  # 全部选项
-```
-
-也可以手动从 npm 安装：
+### 方式 C：手动（npm / tarball）
 
 ```sh
 cd ~/.dsh/profiles/desktop
@@ -291,11 +306,18 @@ pnpm add @neomei/dsh-roundtable@0.1.0-rc.6 \
          @neomei/dsh-client-ui-roundtable@0.1.0-rc.6
 ```
 
-下面第 1–4 步是「从源码构建 + 手动安装」的逐步版，供开发者/自定义用。
+三个包各自也声明了 `dsh.bundle.patch`，所以**不用**手写 patch：重启后 DSH 会把它们选入 `dsh.profile.bundles`，各带一行。
 
-### 1. 构建（贡献者用，从源码）
+### 安装 skill
 
-> 普通用户跳过本步，直接用上面的 npm 安装。构建需在 deepseek-harness checkout 里进行，产出的是官方 `@deepseek-ai/*` 命名的包；要发成 `@neomei/*` 需在打包后把包名（及 `tool-roundtable` 对 `dsh-roundtable` 的交叉引用）改名为 `@neomei/*`。
+```sh
+mkdir -p ~/.agents/skills/roundtable
+cp skill/SKILL.md ~/.agents/skills/roundtable/SKILL.md
+```
+
+### 从源码构建（贡献者）
+
+> 普通用户跳过。构建需在 deepseek-harness checkout 里进行，产出的是官方 `@deepseek-ai/*` 命名的包；要发成 `@neomei/*` 需在打包后把包名（及 `tool-roundtable` 对 `dsh-roundtable` 的交叉引用）改名为 `@neomei/*`。仓库里已提交构建产物 `lib/`，所以 git / tarball 安装都不需要先构建。
 
 与目标 DSH 同版本的 deepseek-harness checkout 里：
 
@@ -321,7 +343,7 @@ cd packages/client/ui-roundtable && pnpm pack
 - `neomei-dsh-tool-roundtable-0.1.0-rc.6.tgz`
 - `neomei-dsh-client-ui-roundtable-0.1.0-rc.6.tgz`
 
-### 2. 装进 profile
+装进 profile：
 
 ```sh
 cd ~/.dsh/profiles/desktop
@@ -330,30 +352,7 @@ pnpm add /path/to/neomei-dsh-roundtable-0.1.0-rc.6.tgz \
          /path/to/neomei-dsh-client-ui-roundtable-0.1.0-rc.6.tgz
 ```
 
-在 profile 的 `cordis.patch.yml` 里插入三个插件：
-
-```yaml
-- insert:
-    - id: roundtable
-      name: '@neomei/dsh-roundtable'
-      config:
-        provider: spawn          # 可选，默认 spawn
-
-    - id: tool-roundtable
-      name: '@neomei/dsh-tool-roundtable'
-
-    - id: ui-roundtable
-      name: '@neomei/dsh-client-ui-roundtable'
-```
-
-### 3. 安装 skill
-
-```sh
-mkdir -p ~/.agents/skills/roundtable
-cp skill/SKILL.md ~/.agents/skills/roundtable/SKILL.md
-```
-
-### 4. 重启
+### 重启
 
 **完全重启 DSH Desktop**，宿主插件才会加载。
 
@@ -401,7 +400,9 @@ pnpm tsc -b tsconfig.client.json                                   # 客户端�
 
 - **成员发言非流式**：成员是各自子会话里的真实 subagent，发言要等该成员跑完才作为一条消息出现（这是 DSH subagent 的固有约束）。
 - 多轮宿主循环（`host.ts`）是代码库里保留的另一种驱动方式，**未接线**到当前 skill 流程；当前由 skill 驱动多轮。
-- 依赖 pin 到 `0.1.0-rc.6`；核心包的传递依赖仍按它们自身的范围解析，升级 DSH 需重新核对 API。
+- 依赖 pin 到 `0.1.0-rc.6`；核心包（`@deepseek-ai/dsh-*`）由宿主提供，升级 DSH 后需重新核对 API（已在 `0.1.5-rc.2` 上验证可加载）。
+- 安装必须让**仓库根**被识别成 bundle：`dsh.bundle.patch` 与 `cordis.patch.yml` 缺一不可，否则 DSH 视其为普通依赖 —— GUI 里表现为安装被回滚，CLI 里表现为 `declares no dsh.bundle — installed as a plain dependency`。
+- 成员模型选择依赖宿主的 `ctx.llm` 注册表；`roundtable_models` 列不出的 provider 会被跳过。
 
 ---
 

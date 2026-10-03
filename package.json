@@ -16,6 +16,9 @@
     "@neomei/dsh-roundtable": "0.1.0-rc.6",
     "@neomei/dsh-tool-roundtable": "0.1.0-rc.6"
   },
+  "scripts": {
+    "check:bundle": "node scripts/check-bundle.mjs"
+  },
   "devDependencies": {
     "@types/node": "^22.20.0",
     "typescript": "^6.0.3"
