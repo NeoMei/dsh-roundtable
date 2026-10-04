@@ -22,6 +22,9 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const failures = []
 
+/** Every entry id this repo inserts must sit inside its own namespace (see below). */
+const ID_PREFIX = 'neomei-'
+
 const readManifest = (dir) => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
 
 const manifest = readManifest(root)
@@ -31,6 +34,7 @@ if (patchRel === undefined) {
 }
 
 const rowNames = []
+const rowIds = []
 if (patchRel !== undefined) {
   const patchPath = resolve(root, patchRel)
   if (!existsSync(patchPath)) {
@@ -38,8 +42,22 @@ if (patchRel !== undefined) {
   } else {
     const patch = readFileSync(patchPath, 'utf8')
     for (const [, name] of patch.matchAll(/^\s*name:\s*['"]?([^'"\s]+)['"]?\s*$/gm)) rowNames.push(name)
+    for (const [, id] of patch.matchAll(/^\s*-\s*id:\s*['"]?([^'"\s]+)['"]?\s*$/gm)) rowIds.push(id)
     if (rowNames.length === 0) failures.push(`${manifest.name}: ${patchRel} declares no insert rows`)
   }
+}
+
+// A row id is a global key in the composed tree: a same-id row in a later
+// bundle layer REPLACES the earlier one and the loser vanishes with no error.
+// Unprefixed ids collide with other plugins (9931666/dsh-plugin-roundtable uses
+// `roundtable`), so every id this repo inserts stays inside its own namespace.
+for (const id of rowIds) {
+  if (!id.startsWith(ID_PREFIX)) {
+    failures.push(`${manifest.name}: entry id ${JSON.stringify(id)} is not namespaced — a same-id row in another bundle would silently replace this one; use "${ID_PREFIX}${id}"`)
+  }
+}
+if (new Set(rowIds).size !== rowIds.length) {
+  failures.push(`${manifest.name}: duplicate entry id in ${patchRel} (${rowIds.join(', ')})`)
 }
 
 const dependencies = manifest.dependencies ?? {}

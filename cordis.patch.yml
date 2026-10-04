@@ -4,16 +4,22 @@
 # `dsh.bundle.patch` target if the repo is later published as a single
 # installable bundle.
 #
-# Targets DSH 0.1.0-rc.6.
+# Entry ids are namespaced: a same-id row in a later bundle layer REPLACES the
+# earlier one and the loser disappears with no error. `id: roundtable` is
+# already taken by 9931666/dsh-plugin-roundtable, so an unprefixed id made the
+# two plugins mutually exclusive — whichever bundle sat later in
+# `dsh.profile.bundles` silently won. Keep the `neomei-` prefix.
+#
+# Targets DSH 0.2.0-rc.2.
 
 - insert:
-    - id: roundtable
+    - id: neomei-roundtable
       name: '@neomei/dsh-roundtable'
       config:
         provider: spawn
 
-    - id: tool-roundtable
+    - id: neomei-tool-roundtable
       name: '@neomei/dsh-tool-roundtable'
 
-    - id: ui-roundtable
+    - id: neomei-ui-roundtable
       name: '@neomei/dsh-client-ui-roundtable'
