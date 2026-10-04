@@ -1,2 +1,6 @@
 packages:
   - packages/*/*
+minimumReleaseAgeExclude:
+  - '@neomei/dsh-client-ui-roundtable@0.1.0-rc.7'
+  - '@neomei/dsh-roundtable@0.1.0-rc.7'
+  - '@neomei/dsh-tool-roundtable@0.1.0-rc.7'
